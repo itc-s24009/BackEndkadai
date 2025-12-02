@@ -1,0 +1,13 @@
+{
+  "extends": "@tsconfig/node24/tsconfig.json",
+  "compilerOptions": {
+    "moduleResolution": "NodeNext",
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "allowImportingTsExtensions": false,
+    "outDir": "./dist"
+  },
+  "include": [
+    "./src/**/*.ts"
+  ]
+}

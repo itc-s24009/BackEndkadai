@@ -1,0 +1,50 @@
+extends ../layout
+
+prepend head
+    - const title = '貸出履歴'
+
+block header
+    h1(class=['text-5xl/14', 'font-light', 'mb-4']) 貸出履歴
+
+block content
+    // エラー表示
+    if error
+        p(class=['text-red-600', 'mb-4'])= error
+
+    // 履歴がない場合
+    if history.length === 0
+        p 貸出履歴はありません。
+    else
+        // 履歴テーブル (Tailwind CSSを使用)
+        div(class="relative overflow-x-auto")
+            table(class="w-full text-sm text-left rtl:text-right text-gray-500")
+                thead(class="text-xs text-gray-700 uppercase bg-gray-50")
+                    tr
+                        th(scope="col" class="px-6 py-3") 書籍名 (ISBN)
+                        th(scope="col" class="px-6 py-3") 貸出日
+                        th(scope="col" class="px-6 py-3") 返却期限
+                        th(scope="col" class="px-6 py-3") 返却日
+
+                tbody
+                    each item in history
+                        tr(class="bg-white border-b")
+                            // 書籍情報
+                            td(class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap")
+                                | #{item.book.name}
+                                br
+                                span(class="text-xs text-gray-400") (#{item.book.isbn})
+
+                            // 日付 (サーバー側の app.locals.dateFormat 関数を使ってフォーマット)
+                            td(class="px-6 py-4")
+                                | #{dateFormat(item.checkout_date)}
+                            td(class="px-6 py-4")
+                                | #{dateFormat(item.due_date)}
+                            td(class="px-6 py-4")
+                                if item.returned_date
+                                    | #{dateFormat(item.returned_date)}
+                                else
+                                    span(class="text-orange-500") 未返却
+
+    // ログアウトボタンなど (任意)
+    div(class="mt-8")
+        a(href="/book/list/1" class="text-blue-600 hover:underline") ← bookに戻る

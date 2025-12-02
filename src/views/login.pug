@@ -1,0 +1,21 @@
+extends ../layout
+
+prepend head
+    - const title = 'Login'
+
+block header
+    h1(class=['text-5xl/14', 'font-light', 'mb-4']) ログイン
+
+block content
+    form(method='post' action='/users/login' class=['max-w-sm', 'mx-auto'])
+        .form-group
+            input(type='email' name='email' id='email' placeholder=''
+                autocomplete='off').peer
+            label(for='email') メールアドレス
+        .form-group
+            input(type='password' name='password' id='password' placeholder='').peer
+            label(for='password') パスワード
+        button(type='submit').submit-button ログイン
+    p(class=['mt-4', 'flex', 'place-content-center', 'text-sm'])
+        a(href='/users/register' class=['hover:underline', 'hover:text-blue-600'])
+            | ユーザー登録

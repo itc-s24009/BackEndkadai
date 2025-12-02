@@ -1,0 +1,17 @@
+extends ../layout
+
+block content
+    form(method='post' action='/users/delete' class=['max-w-md'])
+        input(type='hidden' name='id' value=user.id)
+        +formGroup('text', 'name', 'NAME', user.name)
+        +formGroup('password', 'pass', 'PASSWORD', user.pass)
+        +formGroup('email', 'mail', 'MAIL', user.mail)
+        +formGroup('number', 'age', 'AGE', user.age)
+        button(type='submit').submit-button 作成
+
+mixin formGroup(inputType, inputName, labelText, initialValue='', error=undefined)
+    div(class=['relative', 'z-0', 'w-full', 'mb-5', 'group'])
+        input(type=inputType name=inputName id=inputName autocomplete='off'
+            value=initialValue placeholder='' readonly
+        ).floating-input.peer
+        label(for=inputName).floating-label= labelText

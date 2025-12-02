@@ -1,0 +1,52 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider          = "mysql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+model user {
+  id        String   @id @default(uuid(7)) @db.VarChar(36)
+  email     String   @unique @db.VarChar(254)
+  name      String   @db.VarChar(512)
+  password  String   @db.VarChar(256)
+  is_admin Boolean   @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  isDeleted Boolean  @default(false)
+}
+model publisher {
+  id        String   @id @default(uuid(7)) @db.VarChar(36)
+  name      String   @db.VarChar(128)
+  isDeleted Boolean  @default(false)
+}
+model author {
+  id        String   @id @default(uuid(7)) @db.VarChar(36)
+  name      String   @db.VarChar(128)
+  isDeleted Boolean  @default(false)
+}
+model book {
+  isbn BigInt @unique @db.UnsignedBigInt
+  title String @db.VarChar(512)
+  author_id String  @db.VarChar(36)
+  publisher_id String  @db.VarChar(36)
+  publication_year Int  @db.UnsignedInt
+  publication_month Int  @db.UnsignedTinyInt
+  isDeleted Boolean @default(false)
+}
+model rental_log {
+  id        String   @id @default(uuid(7)) @db.VarChar(36)
+  book_isbn BigInt @db.UnsignedBigInt
+  user_id  String @db.VarChar(36)
+  checkout_date DateTime @db.DateTime(0)
+  due_date DateTime @db.DateTime(0)
+  returned_date DateTime? @db.DateTime(0)
+}

@@ -1,0 +1,16 @@
+extends ../layout
+
+block content
+    form(method='post' action='/users/add' class=['max-w-md'])
+        +formGroup('text', 'name', 'NAME')
+        +formGroup('password', 'pass', 'PASSWORD')
+        +formGroup('email', 'mail', 'MAIL')
+        +formGroup('number', 'age', 'AGE')
+        button(type='submit').submit-button 作成
+
+mixin formGroup(inputType, inputName, labelText, initialValue='', error=undefined)
+    div(class=['relative', 'z-0', 'w-full', 'mb-5', 'group'])
+        input(type=inputType name=inputName id=inputName autocomplete='off'
+            value=initialValue placeholder=''
+        ).floating-input.peer
+        label(for=inputName).floating-label= labelText

@@ -1,0 +1,80 @@
+extends ../layout
+
+prepend head
+    - const title = '返却手続き'
+
+block header
+    h1(class=['text-3xl', 'font-light', 'mb-6']) 現在借りている本 (返却)
+
+block content
+    // 何も借りていない場合
+    if rentals.length === 0
+        div(class="bg-gray-50 p-6 rounded text-center border")
+            p(class="text-gray-600 mb-4") 現在、借りている本はありません。
+            a(href="/book/list" class="text-blue-600 hover:underline") 書籍一覧から本を探す
+
+    else
+        div(class="grid gap-6")
+            each item in rentals
+                div(class="bg-white border p-6 rounded shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center")
+
+                    // 左側: 情報
+                    div(class="mb-4 md:mb-0")
+                        h2(class="text-xl font-bold mb-1")
+                            a(href=`/book/detail/${item.book.isbn}` class="text-black hover:underline")
+                                = item.book.title
+
+                        p(class="text-sm text-gray-500 mb-2") ISBN: #{item.book.isbn}
+
+
+                        div(class="text-sm space-y-1")
+                            p
+                                span(class="font-semibold") 貸出日:
+                                | #{dateFormat(item.checkout_date)}
+                            p(class="text-red-600 font-semibold")
+                                span 返却期限:
+                                | #{dateFormat(item.due_date)}
+
+                    // 右側: 返却ボタン
+                    div
+                        button(
+                            type="button"
+                            onclick=`returnBook('${item.id}')`
+                            class="bg-orange-500 text-white px-6 py-3 rounded font-bold hover:bg-orange-600 transition shadow"
+                        ) 返却する
+
+    // 戻るリンク
+    div(class="mt-8 border-t pt-4")
+        a(href="/book/list/1" class="text-blue-600 hover:underline mr-4") ← Bookへ
+        a(href="/users/history" class="text-blue-600 hover:underline") 履歴を見る
+
+    // ▼ 返却処理用スクリプト
+    script.
+        async function returnBook(rentalId) {
+            if (!confirm('この本を返却しますか？')) return;
+
+            try {
+                // 仕様通り PUT メソッドで送信
+                // ▼ ここを修正！ /book/return → /users/return
+                const response = await fetch('/users/return', {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({id: rentalId})
+                });
+
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('返却が完了しました。ありがとうございました。');
+                    // 画面をリロードしてリストを更新
+                    location.reload();
+                } else {
+                    alert('エラー: ' + (result.message || '予期せぬエラー'));
+                }
+
+            } catch (err) {
+                console.error(err);
+                alert('通信エラーが発生しました');
+            }
+        }

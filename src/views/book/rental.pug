@@ -1,0 +1,65 @@
+extends ../layout
+
+prepend head
+    - const title = '書籍一覧'
+
+block header
+    h1(class=['text-4xl', 'font-light', 'mb-6']) 書籍一覧
+
+block content
+    // ... (前回と同じリスト表示部分) ...
+
+    div(class="grid gap-6")
+        each book in data.books
+            div(class="bg-white border p-6 rounded shadow-sm hover:shadow-md transition relative")
+                h2(class="text-2xl font-bold mb-2")= book.title
+                div(class="text-sm text-gray-600 space-y-1")
+                    p
+                        span(class="font-semibold") ISBN:
+                        | #{book.isbn}
+                    p
+                        span(class="font-semibold") 著者:
+                        | #{book.author.name}
+                    p
+                        span(class="font-semibold") 出版年月:
+                        | #{book.publication_year_month}
+
+                // ▼▼▼ 貸出ボタンを追加 ▼▼▼
+                button(
+                    type="button"
+                    class="mt-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+                    onclick=`rentalBook('${book.isbn}')`
+                ) 貸出する
+
+    // ... (ページネーション部分はそのまま) ...
+
+
+    // ▼▼▼ ページ下部にスクリプトを追加 ▼▼▼
+    script.
+        async function rentalBook(isbn) {
+            if (!confirm('この本を借りますか？')) return;
+
+            try {
+                // 定義された仕様通り JSON body を送る
+                const response = await fetch('/book/rental', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ book_id: isbn }) // ISBNを送信
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('貸出が完了しました！\n返却期限: ' + new Date(result.due_date).toLocaleDateString());
+                    // 履歴画面に飛ばすか、リロードするか
+                    window.location.href = '/users/history';
+                } else {
+                    // 404 や 409 のメッセージを表示
+                    alert('エラー: ' + result.message);
+                }
+
+            } catch (err) {
+                console.error(err);
+                alert('通信エラーが発生しました');
+            }
+        }

@@ -1,0 +1,163 @@
+extends ../layout
+
+prepend head
+    - const title = '書籍管理'
+
+block header
+    h1(class=['text-3xl', 'font-light', 'mb-6', 'text-black']) 書籍管理 (管理者用)
+
+block content
+    // --- 新規登録フォーム ---
+    div(class="bg-blue-50 border border-blue-200 p-6 rounded shadow-sm mb-8")
+        h2(class="text-xl font-bold mb-4 text-black") 新規登録
+        form(action="/admin/book" method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-4")
+
+            // 上段
+            div
+                label(class="block text-sm font-bold text-black mb-1") ISBN (13桁数値)
+                input(type="number" name="isbn" placeholder="例: 9784..." required class="w-full border border-gray-400 p-2 rounded text-black bg-white")
+
+            div
+                label(class="block text-sm font-bold text-black mb-1") 書籍名
+                input(type="text" name="title" placeholder="書籍名" required class="w-full border border-gray-400 p-2 rounded text-black bg-white")
+
+            // 中段
+            div
+                label(class="block text-sm font-bold text-black mb-1") 著者
+                select(name="author_id" class="w-full border border-gray-400 p-2 rounded bg-white text-black" required)
+                    option(value="" class="text-gray-500") 選択してください
+                    each auth in authors
+                        option(value=auth.id class="text-black")= auth.name
+
+            div
+                label(class="block text-sm font-bold text-black mb-1") 出版社
+                select(name="publisher_id" class="w-full border border-gray-400 p-2 rounded bg-white text-black" required)
+                    option(value="" class="text-gray-500") 選択してください
+                    each pub in publishers
+                        option(value=pub.id class="text-black")= pub.name
+
+            // 下段 (年月)
+            div(class="flex gap-4 md:col-span-2")
+                div(class="flex-1")
+                    label(class="block text-sm font-bold text-black mb-1") 出版年
+                    input(type="number" name="publication_year" value="2023" required class="w-full border border-gray-400 p-2 rounded text-black bg-white")
+
+                div(class="flex-1")
+                    label(class="block text-sm font-bold text-black mb-1") 出版月
+                    input(type="number" name="publication_month" min="1" max="12" value="1" required class="w-full border border-gray-400 p-2 rounded text-black bg-white")
+
+            // 登録ボタン
+            div(class="md:col-span-2 text-right")
+                button(type="submit" class="bg-blue-600 text-white px-8 py-2 rounded hover:bg-blue-700 font-bold") 登録
+
+
+    // --- 一覧表示 ---
+    div(class="grid gap-2")
+        h3(class="text-lg font-bold text-black mb-2") 登録済み書籍一覧
+        if books.length === 0
+            p(class="text-black") 登録書籍はありません
+        else
+            each b in books
+                div(class="bg-white border border-gray-300 p-4 rounded flex justify-between items-center hover:shadow hover:bg-gray-50")
+                    // クリックエリア
+                    div(class="flex flex-col cursor-pointer flex-1" onclick=`openEditModal(${JSON.stringify(b)})`)
+                        // タイトルは一番黒く目立たせる
+                        h4(class="text-xl font-extrabold text-black mb-1")= b.title
+
+                        div(class="text-sm text-black flex flex-wrap gap-x-4 gap-y-1 font-medium")
+                            span ISBN: #{b.isbn}
+                            span 著者: #{b.authorName}
+                            span 出版社: #{b.publisherName}
+                            span 発行: #{b.publication_year_month}
+
+                    // 削除ボタン
+                    div
+                        button(type="button" onclick=`deleteBook('${b.isbn}')` class="text-red-600 font-bold bg-white border border-red-300 px-3 py-1 rounded text-sm hover:bg-red-600 hover:text-white transition") 削除
+
+
+    // --- 編集用モーダル ---
+    div(id="editModal" class="fixed inset-0 bg-black bg-opacity-60 hidden flex justify-center items-center z-50")
+        div(class="bg-white p-6 rounded shadow-lg w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto border border-black")
+            h2(class="text-xl font-bold mb-4 text-black") 書籍情報の編集
+
+            form(id="editForm" onsubmit="return false;")
+                div(class="mb-4")
+                    label(class="block text-xs font-bold text-black mb-1") ISBN (変更不可)
+                    input(type="text" id="editIsbn" readonly class="w-full bg-gray-200 border border-gray-400 p-2 rounded text-black cursor-not-allowed font-mono")
+
+                div(class="mb-4")
+                    label(class="block text-sm font-bold text-black mb-1") 書籍名
+                    input(type="text" id="editTitle" class="w-full border border-gray-400 p-2 rounded text-black")
+
+                div(class="grid grid-cols-2 gap-4 mb-4")
+                    div
+                        label(class="block text-sm font-bold text-black mb-1") 著者
+                        select(id="editAuthor" class="w-full border border-gray-400 p-2 rounded text-black bg-white")
+                            each auth in authors
+                                option(value=auth.id)= auth.name
+                    div
+                        label(class="block text-sm font-bold text-black mb-1") 出版社
+                        select(id="editPublisher" class="w-full border border-gray-400 p-2 rounded text-black bg-white")
+                            each pub in publishers
+                                option(value=pub.id)= pub.name
+
+                div(class="grid grid-cols-2 gap-4 mb-6")
+                    div
+                        label(class="block text-sm font-bold text-black mb-1") 年
+                        input(type="number" id="editYear" class="w-full border border-gray-400 p-2 rounded text-black")
+                    div
+                        label(class="block text-sm font-bold text-black mb-1") 月
+                        input(type="number" id="editMonth" min="1" max="12" class="w-full border border-gray-400 p-2 rounded text-black")
+
+                div(class="flex justify-end gap-3")
+                    button(type="button" onclick="closeModal()" class="px-4 py-2 bg-white border border-black text-black rounded hover:bg-gray-100 font-bold") キャンセル
+                    button(type="button" onclick="submitUpdate()" class="px-6 py-2 bg-black text-white rounded font-bold hover:bg-gray-800") 更新
+
+
+    script.
+        function openEditModal(book) {
+            document.getElementById('editIsbn').value = book.isbn;
+            document.getElementById('editTitle').value = book.title;
+            document.getElementById('editAuthor').value = book.author_id;
+            document.getElementById('editPublisher').value = book.publisher_id;
+            document.getElementById('editYear').value = book.year;
+            document.getElementById('editMonth').value = book.month;
+
+            document.getElementById('editModal').classList.remove('hidden');
+        }
+        function closeModal() {
+            document.getElementById('editModal').classList.add('hidden');
+        }
+
+        async function submitUpdate() {
+            const data = {
+                isbn: document.getElementById('editIsbn').value,
+                title: document.getElementById('editTitle').value,
+                author_id: document.getElementById('editAuthor').value,
+                publisher_id: document.getElementById('editPublisher').value,
+                publication_year: document.getElementById('editYear').value,
+                publication_month: document.getElementById('editMonth').value
+            };
+            try {
+                const res = await fetch('/admin/book', {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                if(res.ok) { alert('更新しました'); location.reload(); }
+                else { const e = await res.json(); alert('更新失敗: ' + e.message); }
+            } catch(e) { console.error(e); alert('通信エラー'); }
+        }
+
+        async function deleteBook(isbn) {
+            if(!confirm('本当に削除しますか？')) return;
+            try {
+                const res = await fetch('/admin/book', {
+                    method: 'DELETE',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ isbn })
+                });
+                if(res.ok) { alert('削除しました'); location.reload(); }
+                else { alert('削除失敗'); }
+            } catch(e) { console.error(e); }
+        }

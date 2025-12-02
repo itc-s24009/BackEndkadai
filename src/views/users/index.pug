@@ -1,0 +1,55 @@
+extends ../layout
+
+block content
+    div(class=['relative', 'overflow-x-auto', 'shadow-md', 'sm:rounded-lg'])
+        table(class=['w-full', 'text-sm', 'text-left', 'rtl:text-right',
+            'text-gray-500', 'dark:text-gray-400']
+        )
+            thead(class=['text-xs', 'text-gray-700', 'uppercase', 'bg-gray-50',
+                'dark:bg-gray-700', 'dark:text-gray-400']
+            )
+                tr
+                    th(scope='col' class=['px-6', 'py-3']) id
+                    th(scope='col' class=['px-6', 'py-3']) name
+                    th(scope='col' class=['px-6', 'py-3']) mail
+                    th(scope='col' class=['px-6', 'py-3']) age
+
+            tbody
+                each user in content
+                    tr(class=['bg-white', 'border-b', 'dark:bg-gray-800',
+                        'dark:bg-gray-700', 'border-gray-200', 'hover:bg-gray-50',
+                        'dark:hover:bg-gray-600']
+                    )
+                        th(scope='row' class=['px-6', 'py-4', 'font-medium',
+                            'text-gray-900', 'whitespace-nowrap', 'dark:text-white']
+                        )= user.id
+                        td(class=['px-6', 'py-4'])= user.name
+                        td(class=['px-6', 'py-4'])= user.mail
+                        td(class=['px-6', 'py-4'])= user.age
+                else
+                    tr
+                        td(class=['px-6', 'py-4'] colspan='4') ユーザがいません
+    .flex.mt-2
+        // Previous Button
+        if content[0]
+            - const prev = content[0]
+            a(href=`/users?prev=${prev.id}` class=['pager-link', 'me-3'])
+                svg(class=['w-3.5', 'h-3.5', 'me-2', 'rtl:rotate-180']
+                    aria-hidden='true' xmlns='http://www.w3.org/2000/svg'
+                    viewBox='0 0 14 10'
+                )
+                    path(stroke='currentColor' stroke-linecap='round'
+                        stroke-linejoin='round' stroke-width='2'
+                        d='M13 5H1m0 0 4 4M1 5l4-4')
+                | 前へ
+        // Next Button
+        if content[2]
+            - const next = content[2]
+            a(href=`/users?next=${next.id}` class=['pager-link'])
+                | 次へ
+                svg(class=['w-3.5', 'h-3.5', 'ms-2', 'rtl:rotate-180']
+                    aria-hidden='true' xmlns='http://www.w3.org/2000/svg'
+                    viewBox='0 0 14 10')
+                    path(stroke='currentColor' stroke-linecap='round'
+                        stroke-linejoin='round' stroke-width='2'
+                        d='M1 5h12m0 0L9 1m4 4L9 9')
